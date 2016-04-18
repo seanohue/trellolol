@@ -1,0 +1,31 @@
+{
+  "name": "trellolol",
+  "version": "0.0.1",
+  "description": "Trello JSON to Markdown",
+  "main": "trellolol.js",
+  "dependencies": {
+    "json2md": "^1.5.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seanohue/trellolol.git"
+  },
+  "keywords": [
+    "trello",
+    "json",
+    "markdown",
+    "release",
+    "notes",
+    "changelog"
+  ],
+  "author": "Sean O'Donohue",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/seanohue/trellolol/issues"
+  },
+  "homepage": "https://github.com/seanohue/trellolol#readme"
+}
