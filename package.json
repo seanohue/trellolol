@@ -6,7 +6,9 @@
   "dependencies": {
     "json2md": "^1.5.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "typescript": "^1.8.10"
+  },
   "scripts": {
     "test": "npm test"
   },
