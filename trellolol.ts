@@ -2,7 +2,68 @@
 
 declare var require: any
 const fs = require('fs');
-const toMD = require('json2md');
+const json2md = require('json2md');
+
+class TrelloCard {
+  name: string;
+  desc: string;
+
+  constructor(name: string, desc: string) {
+    this.name = name;
+    this.desc = desc;
+  }
+
+  toMarkdown(): string {
+    return '\n- ' + this.name;
+  }
+}
+
+class TrelloList {
+  name: string;
+  cards: TrelloCard[];
+
+  constructor(name: string, cards: TrelloCard[]) {
+    this.name = name;
+    this.cards = cards;
+  }
+
+  stringifyCards(): string[] {
+    return this.cards.map(card => card.toMarkdown());
+  }
+
+  toJSON(): any {
+    return {
+      h3: this.name
+    };
+  }
+
+  toMarkdown(): string {
+    return json2md(this.toJSON()) + this.stringifyCards();
+  }
+}
+
+class TrelloDocument {
+  title: string;
+  lists: TrelloList[];
+
+  constructor(title: string, lists: TrelloList[]) {
+    this.title = title;
+    this.lists = lists;
+  }
+
+  toJSON(): any {
+    return {
+      h1: this.title
+    };
+
+  }
+
+  toMarkdown(): string {
+    let header = json2md(this.toJSON());
+    let compiledLists = this.lists.map(list => '\n' + list.toMarkdown());
+    return header.concat(compiledLists);
+  }
+}
 
 /// Set up us the Trello objects.
 const trelloBoard = require('./example.json');
@@ -18,45 +79,12 @@ const targetLists: any[] = lists.filter(list => contains(targetListNames, list.n
 const targetListIDs: string[] = targetLists.map(list => list.id);
 const targetCards: any[] = cards.filter(card => contains(targetListIDs, card.idList));
 
-console.log(targetCards);
+// Put objects into classes...
+let myCards: TrelloCard[] = targetCards.map(card => new TrelloCard(card.name, card.desc));
+let myLists: TrelloList[] = targetLists.map(list => new TrelloList(list.name, myCards));
+let myDocument: TrelloDocument = new TrelloDocument(projectName, myLists);
 
-/*
-  h1: projectName
-  h3: targetListName
-      ul:
-        cardName
-        cardDesc
-*/
-
-class TrelloCard {
-  name: string;
-  desc: string;
-
-  constructor(name: string, desc: string) {
-    this.name = name;
-    this.desc = desc;
-  }
-
-  toJSON() {
-    return '';// Do stuff here
-  }
-}
-
-class TrelloList {
-  name: string;
-  cards: string[];
-
-  constructor(name: string) {
-    this.name = name;
-  }
-  addCard(card: TrelloCard) {
-    this.cards.push(card.toJSON())
-  }
-  toJSON() {
-    // Do stuff here
-  }
-}
-
+console.log(myDocument.toMarkdown());
 
 function contains(collection: any[], item: any): boolean
 {
