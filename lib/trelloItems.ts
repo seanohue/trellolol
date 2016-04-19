@@ -24,8 +24,8 @@ export class List {
     this.cards = cards;
   }
 
-  stringifyCards(): string[] {
-    return this.cards.map(card => card.toMarkdown());
+  stringifyCards(): string {
+    return this.cards.map(card => card.toMarkdown()).join();
   }
 
   toJSON(): any {

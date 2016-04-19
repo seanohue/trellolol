@@ -16,7 +16,8 @@ var targetCards = cards.filter(function (card) { return contains(targetListIDs, 
 var myCards = targetCards.map(function (card) { return new Trello.Card(card.name, card.desc); });
 var myLists = targetLists.map(function (list) { return new Trello.List(list.name, myCards); });
 var myDocument = new Trello.Document(projectName, myLists);
-console.log(myDocument.toMarkdown()); //TODO: Actually write this to a markdown file.
+console.log(myDocument.toMarkdown());
+fs.writeFileSync('./example.md', myDocument.toMarkdown());
 function contains(collection, item) {
     return collection.indexOf(item) > -1;
 }

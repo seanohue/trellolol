@@ -25,7 +25,9 @@ let myCards: Trello.Card[] = targetCards.map(card => new Trello.Card(card.name, 
 let myLists: Trello.List[] = targetLists.map(list => new Trello.List(list.name, myCards));
 let myDocument: Trello.Document = new Trello.Document(projectName, myLists);
 
-console.log(myDocument.toMarkdown()); //TODO: Actually write this to a markdown file.
+console.log(myDocument.toMarkdown());
+
+fs.writeFileSync('./example.md', myDocument.toMarkdown());
 
 function contains(collection: any[], item: any): boolean
 {
