@@ -4,6 +4,7 @@
   "description": "Trello JSON to Markdown",
   "main": "trellolol.js",
   "dependencies": {
+    "commander": "^2.9.0",
     "json2md": "^1.5.0"
   },
   "devDependencies": {
@@ -29,5 +30,8 @@
   "bugs": {
     "url": "https://github.com/seanohue/trellolol/issues"
   },
-  "homepage": "https://github.com/seanohue/trellolol#readme"
+  "homepage": "https://github.com/seanohue/trellolol#readme",
+  "bin": {
+    "trellolol": "./trellolol.js"
+  }
 }
