@@ -28,6 +28,36 @@ console.log(targetCards);
         cardDesc
 */
 
+class TrelloCard {
+  name: string;
+  desc: string;
+
+  constructor(name: string, desc: string) {
+    this.name = name;
+    this.desc = desc;
+  }
+
+  toJSON() {
+    return '';// Do stuff here
+  }
+}
+
+class TrelloList {
+  name: string;
+  cards: string[];
+
+  constructor(name: string) {
+    this.name = name;
+  }
+  addCard(card: TrelloCard) {
+    this.cards.push(card.toJSON())
+  }
+  toJSON() {
+    // Do stuff here
+  }
+}
+
+
 function contains(collection: any[], item: any): boolean
 {
   return collection.indexOf(item) > -1;
