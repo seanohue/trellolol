@@ -1,62 +1,63 @@
-module Trello {
-  export class TrelloCard {
-    name: string;
-    desc: string;
+declare var require: any;
+const json2md = require('json2md');
 
-    constructor(name: string, desc: string) {
-      this.name = name;
-      this.desc = desc;
-    }
+export class Card {
+  name: string;
+  desc: string;
 
-    toMarkdown(): string {
-      return '\n- ' + this.name;
-    }
+  constructor(name: string, desc: string) {
+    this.name = name;
+    this.desc = desc;
   }
 
-  export class TrelloList {
-    name: string;
-    cards: TrelloCard[];
+  toMarkdown(): string {
+    return '\n- ' + this.name;
+  }
+}
 
-    constructor(name: string, cards: TrelloCard[]) {
-      this.name = name;
-      this.cards = cards;
-    }
+export class List {
+  name: string;
+  cards: Card[];
 
-    stringifyCards(): string[] {
-      return this.cards.map(card => card.toMarkdown());
-    }
-
-    toJSON(): any {
-      return {
-        h3: this.name
-      };
-    }
-
-    toMarkdown(): string {
-      return json2md(this.toJSON()) + this.stringifyCards();
-    }
+  constructor(name: string, cards: Card[]) {
+    this.name = name;
+    this.cards = cards;
   }
 
-  export class TrelloDocument {
-    title: string;
-    lists: TrelloList[];
+  stringifyCards(): string[] {
+    return this.cards.map(card => card.toMarkdown());
+  }
 
-    constructor(title: string, lists: TrelloList[]) {
-      this.title = title;
-      this.lists = lists;
-    }
+  toJSON(): any {
+    return {
+      h3: this.name
+    };
+  }
 
-    toJSON(): any {
-      return {
-        h1: this.title
-      };
+  toMarkdown(): string {
+    return json2md(this.toJSON()) + this.stringifyCards();
+  }
+}
 
-    }
+export class Document {
+  title: string;
+  lists: List[];
 
-    toMarkdown(): string {
-      let header = json2md(this.toJSON());
-      let compiledLists = this.lists.map(list => '\n' + list.toMarkdown());
-      return header.concat(compiledLists);
-    }
+  constructor(title: string, lists: List[]) {
+    this.title = title;
+    this.lists = lists;
+  }
+
+  toJSON(): any {
+    return {
+      h1: this.title
+    };
+
+  }
+
+  toMarkdown(): string {
+    let header = json2md(this.toJSON());
+    let compiledLists = this.lists.map(list => '\n' + list.toMarkdown());
+    return header.concat(compiledLists);
   }
 }
