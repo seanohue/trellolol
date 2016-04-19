@@ -1,8 +1,10 @@
 'use strict';
 var fs = require('fs');
+var toMD = require('json2md');
 var trelloBoard = require('./example.json');
 var cards = trelloBoard.cards;
 var lists = trelloBoard.lists;
+var projectName = 'Schmup';
 var targetListNames = ['Technical'];
 var targetLists = lists.filter(function (list) { return contains(targetListNames, list.name); });
 var targetListIDs = targetLists.map(function (list) { return list.id; });
