@@ -15,8 +15,8 @@ let outputFile = './example.md';
 commander
   .arguments('<input file>', '<output file>')
   .action((input, output) => {
-    inputFile = has(i, '.json') ? i : i + '.json';
-    outputFile = has(o, '.md') ? o : o + '.md';
+    inputFile = input.endsWith('.json') ? input : input + '.json';
+    outputFile = output.endsWith('.md') ? output : output + '.md';
   })
   .parse(process.argv);
 
@@ -31,9 +31,9 @@ const projectName: string = 'Schmup';
 
 // Organize the Trello objects.
 const targetListNames: string[] = ['Adding game features'];
-const targetLists: any[] = lists.filter(list => contains(targetListNames, list.name));
+const targetLists: any[] = lists.filter(list => targetListNames.some(name => name === list.name));
 const targetListIDs: string[] = targetLists.map(list => list.id);
-const targetCards: any[] = cards.filter(card => contains(targetListIDs, card.idList));
+const targetCards: any[] = cards.filter(card => targetListIDs.some(id => id === card.idList));
 
 // Put objects into classes...
 let myCards: Trello.Card[] = targetCards.map(card => new Trello.Card(card.name, card.desc));
@@ -43,8 +43,3 @@ let myDocument: Trello.Document = new Trello.Document(projectName, myLists);
 console.log(myDocument.toMarkdown());
 
 fs.writeFileSync(outputFile, myDocument.toMarkdown());
-
-function contains(collection: any[], item: any): boolean
-{
-  return collection.indexOf(item) > -1;
-}
