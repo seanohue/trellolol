@@ -22,4 +22,4 @@ Usage: `trellolol <input json file> <output md file> [optional trello list name 
 
 See the examples directory for an example input/output. The main use case for this, as I see it now, is to quickly create an easily editable changelog/release notes for a project. I am sure it has other uses. If you want features or find a horrific bug (there's very little error handling), please submit an issue.
 
-![trellolol](./Troll-face.sh.png)
+![trellolol](img/troll.sh.png)

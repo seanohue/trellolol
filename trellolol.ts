@@ -9,13 +9,11 @@ import Trello = require('./lib/trelloItems');
 
 const fs = require('fs');
 const commander = require('commander');
-const dir = process.cwd() + '/';
 
 // Defaults
 let inputFile;
 let outputFile;
 let targetListName;
-
 
 // CLI options
 commander
@@ -33,6 +31,8 @@ function validate(arg) {
 }
 
 /// Set up us the Trello objects.
+//TODO: Allow for dynamic call to Trello API via an option?
+const dir = process.cwd() + '/';
 const trelloBoard = require(dir + inputFile);
 const cards: any[] = trelloBoard.cards;
 const lists: any[] = trelloBoard.lists;
@@ -41,6 +41,7 @@ const lists: any[] = trelloBoard.lists;
 const projectName: string = trelloBoard.name || 'Project';
 
 // Organize the Trello objects.
+// TODO: Allow for multiple list names to be targeted.
 const targetListNames: string[] = [targetListName];
 const targetLists: any[] = lists.filter(list => targetListNames.some(name => name === list.name));
 const targetListIDs: string[] = targetLists.map(list => list.id);
