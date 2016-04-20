@@ -1,24 +1,30 @@
 #!/usr/bin/env node
 'use strict';
+/// <reference path="lib/trelloItems.ts"/>
 var Trello = require('./lib/trelloItems');
 var fs = require('fs');
 var commander = require('commander');
+var dir = process.cwd() + '/';
 // Defaults
-var inputFile = './example.json';
-var outputFile = './example.md';
-var targetListName = 'Done';
+var inputFile;
+var outputFile;
+var targetListName;
 // CLI options
 commander
     .arguments('<input> <output> [listname]')
     .action(function (input, output, listname) {
-    console.log(input, output, listname);
-    inputFile = input.endsWith && input.endsWith('.json') ? input : input + '.json';
-    outputFile = output.endsWith && output.endsWith('.md') ? output : output + '.md';
-    targetListName = listname || targetListName;
+    [input, output].forEach(validate);
+    inputFile = (input.endsWith('.json') ? input : input + '.json');
+    outputFile = (output.endsWith('.md') ? output : output + '.md');
+    targetListName = listname || 'Done';
 })
     .parse(process.argv);
+function validate(arg) {
+    if (!arg)
+        throw 'You must supply an input and output filename.';
+}
 /// Set up us the Trello objects.
-var trelloBoard = require(inputFile);
+var trelloBoard = require(dir + inputFile);
 var cards = trelloBoard.cards;
 var lists = trelloBoard.lists;
 //TODO: Pull from board name.
@@ -34,4 +40,4 @@ var myLists = targetLists.map(function (list) { return new Trello.List(list.name
 var myDocument = new Trello.Document(projectName, myLists);
 console.log("\nRendered unto Markdown thusly:\n");
 console.log(myDocument.toMarkdown());
-fs.writeFileSync(outputFile, myDocument.toMarkdown());
+fs.writeFileSync(dir + outputFile, myDocument.toMarkdown());

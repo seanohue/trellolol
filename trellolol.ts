@@ -1,28 +1,29 @@
 #!/usr/bin/env node
 
 'use strict';
-/// <reference path="lib/trelloItems.ts"/>
 declare var require: any;
 declare var process: any;
 
+/// <reference path="lib/trelloItems.ts"/>
 import Trello = require('./lib/trelloItems');
 
 const fs = require('fs');
 const commander = require('commander');
+const dir = process.cwd() + '/';
 
 // Defaults
 let inputFile;
 let outputFile;
 let targetListName;
 
+
 // CLI options
 commander
   .arguments('<input> <output> [listname]')
   .action((input, output, listname) => {
     [input, output].forEach(validate);
-    console.log(input, output, listname);
-    inputFile = input.endsWith('.json') ? input : input + '.json';
-    outputFile = output.endsWith('.md') ? output : output + '.md';
+    inputFile = (input.endsWith('.json') ? input : input + '.json');
+    outputFile = (output.endsWith('.md') ? output : output + '.md');
     targetListName = listname || 'Done';
   })
   .parse(process.argv);
@@ -32,7 +33,7 @@ function validate(arg) {
 }
 
 /// Set up us the Trello objects.
-const trelloBoard = require(inputFile);
+const trelloBoard = require(dir + inputFile);
 const cards: any[] = trelloBoard.cards;
 const lists: any[] = trelloBoard.lists;
 
@@ -53,4 +54,4 @@ let myDocument: Trello.Document = new Trello.Document(projectName, myLists);
 console.log("\nRendered unto Markdown thusly:\n");
 console.log(myDocument.toMarkdown());
 
-fs.writeFileSync(outputFile, myDocument.toMarkdown());
+fs.writeFileSync(dir + outputFile, myDocument.toMarkdown());
