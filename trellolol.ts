@@ -5,9 +5,24 @@ declare var require: any;
 import Trello = require('./lib/trelloItems');
 
 const fs = require('fs');
+const commander = require('commander');
+
+// Defaults
+let inputFile = './example.json';
+let outputFile = './example.md';
+
+// CLI options
+commander
+  .arguments('<input file>', '<output file>')
+  .action((input, output) => {
+    inputFile = has(i, '.json') ? i : i + '.json';
+    outputFile = has(o, '.md') ? o : o + '.md';
+  })
+  .parse(process.argv);
+
 
 /// Set up us the Trello objects.
-const trelloBoard = require('./example.json');
+const trelloBoard = require(inputFile);
 const cards: any[] = trelloBoard.cards;
 const lists: any[] = trelloBoard.lists;
 
@@ -27,7 +42,7 @@ let myDocument: Trello.Document = new Trello.Document(projectName, myLists);
 
 console.log(myDocument.toMarkdown());
 
-fs.writeFileSync('./example.md', myDocument.toMarkdown());
+fs.writeFileSync(outputFile, myDocument.toMarkdown());
 
 function contains(collection: any[], item: any): boolean
 {
