@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 'use strict';
 var Trello = require('./lib/trelloItems');
 var fs = require('fs');
@@ -5,14 +6,15 @@ var commander = require('commander');
 // Defaults
 var inputFile = './example.json';
 var outputFile = './example.md';
-var targetListName = 'Adding game features';
+var targetListName = 'Done';
 // CLI options
 commander
-    .arguments('<input file>', '<output file>', '<list name>')
-    .action(function (input, output, name) {
-    inputFile = input.endsWith('.json') ? input : input + '.json';
-    outputFile = output.endsWith('.md') ? output : output + '.md';
-    targetListName = name || targetListName;
+    .arguments('<input> <output> [listname]')
+    .action(function (input, output, listname) {
+    console.log(input, output, listname);
+    inputFile = input.endsWith && input.endsWith('.json') ? input : input + '.json';
+    outputFile = output.endsWith && output.endsWith('.md') ? output : output + '.md';
+    targetListName = listname || targetListName;
 })
     .parse(process.argv);
 /// Set up us the Trello objects.

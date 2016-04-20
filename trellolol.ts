@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 'use strict';
 /// <reference path="lib/trelloItems.ts"/>
 declare var require: any;
@@ -9,20 +11,25 @@ const fs = require('fs');
 const commander = require('commander');
 
 // Defaults
-let inputFile = './example.json';
-let outputFile = './example.md';
-let targetListName = 'Adding game features';
+let inputFile;
+let outputFile;
+let targetListName;
 
 // CLI options
 commander
-  .arguments('<input file>', '<output file>', '<list name>')
-  .action((input, output, name) => {
+  .arguments('<input> <output> [listname]')
+  .action((input, output, listname) => {
+    [input, output].forEach(validate);
+    console.log(input, output, listname);
     inputFile = input.endsWith('.json') ? input : input + '.json';
     outputFile = output.endsWith('.md') ? output : output + '.md';
-    targetListName = name || targetListName;
+    targetListName = listname || 'Done';
   })
   .parse(process.argv);
 
+function validate(arg) {
+  if (!arg) throw 'You must supply an input and output filename.';
+}
 
 /// Set up us the Trello objects.
 const trelloBoard = require(inputFile);
