@@ -19,6 +19,8 @@ let targetListName;
 commander
   .arguments('<input> <output> [listname]')
   .option('-n, --newer', 'Only include cards from the past 30 days')
+  .option('-o, --open', 'Only include open cards')
+  .option('-c, --closed', 'Only include closed cards')
   .action((input, output, listname) => {
     [input, output].forEach(validate);
     inputFile = (input.endsWith('.json') ? input : input + '.json');
@@ -44,31 +46,51 @@ const projectName: string = trelloBoard.name || 'Project';
 // Organize the Trello objects.
 // TODO: Allow for multiple list names to be targeted.
 const targetListNames: string[] = [targetListName];
-const targetLists: any[] = lists.filter(list => targetListNames.some(name => name === list.name));
-const targetListIDs: string[] = targetLists.map(list => list.id);
-const targetCards: any[] = cards.filter(card => targetListIDs.some(id => id === card.idList))
-  // Filter out cards not from last 30 days.
-  .filter(card => {
-    if (!commander.newer) return true;
-    const base = 10;
-    const today = new Date();
-    const month = today.getMonth() + 1;
-    const day = today.getDay() + 1;
-    const cardMonth = parseInt(card.dateLastActivity.substring(5, 7), base);
-    const cardDay = parseInt(card.dateLastActivity.substring(8, 10), base);
+const targetLists: any[] = lists
+  .filter(list => targetListNames.some(name => name === list.name));
 
-    const isSameMonth     = cardMonth === month;
-    const isPreviousMonth = cardMonth === cardMonth - 1;
-    const isWithinThirty  = isPreviousMonth && cardDay >= day;
-    return isSameMonth || isWithinThirty;
-  });
+const targetListIDs: string[] = targetLists
+  .map(list => list.id);
+
+const targetCards: any[] = cards
+  .filter(card => targetListIDs.some(id => id === card.idList))
+  .filter(onlyFromLastMonth)
+  .filter(openOrClosed);
+
 
 // Put objects into classes...
-let myCards: Trello.Card[] = targetCards.map(card => new Trello.Card(card.name, card.desc));
-let myLists: Trello.List[] = targetLists.map(list => new Trello.List(list.name, myCards));
+let myCards: Trello.Card[] = targetCards
+  .map(card => new Trello.Card(card.name, card.desc));
+let myLists: Trello.List[] = targetLists
+  .map(list => new Trello.List(list.name, myCards));
 let myDocument: Trello.Document = new Trello.Document(projectName, myLists);
 
 console.log("\nRendered unto Markdown thusly:\n");
 console.log(myDocument.toMarkdown());
 
 fs.writeFileSync(dir + outputFile, myDocument.toMarkdown());
+
+
+
+function openOrClosed(card) {
+  if (commander.open && commander.closed) return true;
+  if (commander.open)   return card.closed !== 'true';
+  if (commander.closed) return card.closed === 'true';
+  return true;
+}
+
+function onlyFromLastMonth(card) {
+  if (!commander.newer) return true;
+  const base = 10;
+  const today = new Date();
+  const month = today.getMonth() + 1;
+  const day = today.getDay() + 1;
+
+  const cardMonth = parseInt(card.dateLastActivity.substring(5, 7), base);
+  const cardDay = parseInt(card.dateLastActivity.substring(8, 10), base);
+
+  const isSameMonth     = cardMonth === month;
+  const isPreviousMonth = cardMonth === cardMonth - 1;
+  const isWithinThirty  = isPreviousMonth && cardDay >= day;
+  return isSameMonth || isWithinThirty;
+}
