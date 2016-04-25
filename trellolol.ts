@@ -18,6 +18,7 @@ let targetListName;
 // CLI options
 commander
   .arguments('<input> <output> [listname]')
+  .option('-a, --archived', 'Include archived cards')
   .action((input, output, listname) => {
     [input, output].forEach(validate);
     inputFile = (input.endsWith('.json') ? input : input + '.json');
@@ -45,7 +46,8 @@ const projectName: string = trelloBoard.name || 'Project';
 const targetListNames: string[] = [targetListName];
 const targetLists: any[] = lists.filter(list => targetListNames.some(name => name === list.name));
 const targetListIDs: string[] = targetLists.map(list => list.id);
-const targetCards: any[] = cards.filter(card => targetListIDs.some(id => id === card.idList));
+const targetCards: any[] = cards.filter(card => targetListIDs.some(id => id === card.idList))
+                                .filter(card => commander.archived ? true : card.closed === 'true');
 
 // Put objects into classes...
 let myCards: Trello.Card[] = targetCards.map(card => new Trello.Card(card.name, card.desc));

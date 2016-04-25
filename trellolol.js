@@ -4,7 +4,6 @@
 var Trello = require('./lib/trelloItems');
 var fs = require('fs');
 var commander = require('commander');
-var dir = process.cwd() + '/';
 // Defaults
 var inputFile;
 var outputFile;
@@ -12,6 +11,7 @@ var targetListName;
 // CLI options
 commander
     .arguments('<input> <output> [listname]')
+    .option('-a, --archived', 'Include archived cards')
     .action(function (input, output, listname) {
     [input, output].forEach(validate);
     inputFile = (input.endsWith('.json') ? input : input + '.json');
@@ -24,16 +24,20 @@ function validate(arg) {
         throw 'You must supply an input and output filename.';
 }
 /// Set up us the Trello objects.
+//TODO: Allow for dynamic call to Trello API via an option?
+var dir = process.cwd() + '/';
 var trelloBoard = require(dir + inputFile);
 var cards = trelloBoard.cards;
 var lists = trelloBoard.lists;
 //TODO: Pull from board name.
 var projectName = trelloBoard.name || 'Project';
 // Organize the Trello objects.
+// TODO: Allow for multiple list names to be targeted.
 var targetListNames = [targetListName];
 var targetLists = lists.filter(function (list) { return targetListNames.some(function (name) { return name === list.name; }); });
 var targetListIDs = targetLists.map(function (list) { return list.id; });
-var targetCards = cards.filter(function (card) { return targetListIDs.some(function (id) { return id === card.idList; }); });
+var targetCards = cards.filter(function (card) { return targetListIDs.some(function (id) { return id === card.idList; }); })
+    .filter(function (card) { return commander.archived ? true : card.closed === 'true'; });
 // Put objects into classes...
 var myCards = targetCards.map(function (card) { return new Trello.Card(card.name, card.desc); });
 var myLists = targetLists.map(function (list) { return new Trello.List(list.name, myCards); });
