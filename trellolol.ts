@@ -47,22 +47,21 @@ const targetListNames: string[] = [targetListName];
 const targetLists: any[] = lists.filter(list => targetListNames.some(name => name === list.name));
 const targetListIDs: string[] = targetLists.map(list => list.id);
 const targetCards: any[] = cards.filter(card => targetListIDs.some(id => id === card.idList))
+  // Filter out cards not from last 30 days.
+  .filter(card => {
+    if (!commander.newer) return true;
+    const base = 10;
+    const today = new Date();
+    const month = today.getMonth() + 1;
+    const day = today.getDay() + 1;
+    const cardMonth = parseInt(card.dateLastActivity.substring(5, 7), base);
+    const cardDay = parseInt(card.dateLastActivity.substring(8, 10), base);
 
-                                // Filter out cards not from last 30 days.
-                                .filter(card => {
-                                  if (!commander.newer) return true;
-                                  const base = 10;
-                                  const today = new Date();
-                                  const month = today.getMonth() + 1;
-                                  const day = today.getDay() + 1;
-                                  const cardMonth = parseInt(card.dateLastActivity.substring(5, 7), base);
-                                  const cardDay = parseInt(card.dateLastActivity.substring(8, 10), base);
-
-                                  let isSameMonth     = cardMonth === month;
-                                  let isPreviousMonth = cardMonth === cardMonth - 1;
-                                  let isWithinThirty  = isPreviousMonth && cardDay >= day;
-                                  return isSameMonth || isWithinThirty;
-                                });
+    const isSameMonth     = cardMonth === month;
+    const isPreviousMonth = cardMonth === cardMonth - 1;
+    const isWithinThirty  = isPreviousMonth && cardDay >= day;
+    return isSameMonth || isWithinThirty;
+  });
 
 // Put objects into classes...
 let myCards: Trello.Card[] = targetCards.map(card => new Trello.Card(card.name, card.desc));
