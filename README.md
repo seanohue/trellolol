@@ -20,6 +20,14 @@ Oh, okay.
 
 Usage: `trellolol <input json file> <output md file> [optional trello list name to render. defaults to "Done"]`
 
+Options:
+```
+-n --newer : Include only cards from the last 30 days.
+-o --open : Include only cards that are still open.
+-c --closed : Include only cards that are closed.
+````
+
+
 See the examples directory for an example input/output. The main use case for this, as I see it now, is to quickly create an easily editable changelog/release notes for a project. I am sure it has other uses. If you want features or find a horrific bug (there's very little error handling), please submit an issue.
 
 ![trellolol](img/troll.sh.png)
