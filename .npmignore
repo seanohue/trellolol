@@ -1,0 +1,6 @@
+img/
+*.ts
+**/*.ts
+example/
+tsconfig.json
+typings.json
