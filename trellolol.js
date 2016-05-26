@@ -2,9 +2,10 @@
 
 'use strict';
 
-import {$: fs} from "fs";
-import {$: commander} from "commander";
+import { $: fs } from "fs";
+import { $: commander } from "commander";
 
+import { md } from "md";
 
 
 // CLI options
@@ -18,7 +19,9 @@ commander
     validate(input);
     inputFile = (input.endsWith('.json') ? input : input + '.json');
 
-    if (outputFile) outputFile = (output.endsWith('.md') ? output : output + '.md');
+    if (outputFile) {
+      outputFile = (output.endsWith('.md') ? output : output + '.md');
+    }
 
     targetListName = listname || 'Done';
   })
@@ -29,45 +32,37 @@ function validate(arg) {
 }
 
 /// Set up us the Trello objects.
-//TODO: Allow for dynamic call to Trello API via an option?
 const dir = process.cwd() + '/';
 const trelloBoard = require(dir + inputFile);
-const cards: any[] = trelloBoard.cards;
-const lists: any[] = trelloBoard.lists;
-
-//TODO: Pull from board name.
-const projectName: string = trelloBoard.name || 'Project';
+const lists = trelloBoard.lists;
 
 // Organize the Trello objects.
 // TODO: Allow for multiple list names to be targeted.
-const targetListNames: string[] = [targetListName];
-const targetLists: any[] = lists
+const targetListNames = [targetListName];
+const targetLists = lists
   .filter(list => targetListNames.some(name => name === list.name));
+const targetListIDs = targetLists.map(list => list.id);
 
-const targetListIDs: string[] = targetLists
-  .map(list => list.id);
-
-const targetCards: any[] = cards
+const cards = trelloBoard.cards
   .filter(card => targetListIDs.some(id => id === card.idList))
   .filter(onlyFromLastMonth)
   .filter(openOrClosed);
 
+//TODO: Include contrib. names and such.
+const renderBoardInfo = board => md.h(1, board.name);
 
-// Put objects into classes...
-let myCards: Trello.Card[] = targetCards
-  .map(card => new Trello.Card(card.name, card.desc));
-let myLists: Trello.List[] = targetLists
-  .map(list => new Trello.List(list.name, myCards));
-let myDocument: Trello.Document = new Trello.Document(projectName, myLists);
+//TODO: Include checklists, card descs, timestamps, tags/categories.
+const renderCard = card  => md.li(card.name);
+const renderList = cards => cards.map(renderCard).join('');
 
-console.log("\nRendered unto Markdown thusly:\n");
-console.log(myDocument.toMarkdown());
-
-if (outputFile) {
-  fs.writeFileSync(dir + outputFile, myDocument.toMarkdown());
+const write = (dir, file, str) => {
+  console.log(str);
+  if (dir && file) fs.writeFileSync(dest, str));
 }
 
+write(dir, outputFile, renderList(cards));
 
+//TODO: Make into pure funcs
 function openOrClosed(card) {
   if (commander.open && commander.closed) return true;
   if (commander.open)   return card.closed !== 'true';
