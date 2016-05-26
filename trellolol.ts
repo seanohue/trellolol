@@ -1,30 +1,25 @@
 #!/usr/bin/env node
 
 'use strict';
-declare var require: any;
-declare var process: any;
 
-/// <reference path="lib/trelloItems.ts"/>
-import Trello = require('./lib/trelloItems');
+import {$: fs} from "fs";
+import {$: commander} from "commander";
 
-const fs = require('fs');
-const commander = require('commander');
 
-// Defaults
-let inputFile;
-let outputFile;
-let targetListName;
 
 // CLI options
+let inputFile, outputFile, targetListName;
 commander
   .arguments('<input> <output> [listname]')
   .option('-n, --newer', 'Only include cards from the past 30 days')
   .option('-o, --open', 'Only include open cards')
   .option('-c, --closed', 'Only include closed cards')
   .action((input, output, listname) => {
-    [input, output].forEach(validate);
+    validate(input);
     inputFile = (input.endsWith('.json') ? input : input + '.json');
-    outputFile = (output.endsWith('.md') ? output : output + '.md');
+
+    if (outputFile) outputFile = (output.endsWith('.md') ? output : output + '.md');
+
     targetListName = listname || 'Done';
   })
   .parse(process.argv);
@@ -68,8 +63,9 @@ let myDocument: Trello.Document = new Trello.Document(projectName, myLists);
 console.log("\nRendered unto Markdown thusly:\n");
 console.log(myDocument.toMarkdown());
 
-fs.writeFileSync(dir + outputFile, myDocument.toMarkdown());
-
+if (outputFile) {
+  fs.writeFileSync(dir + outputFile, myDocument.toMarkdown());
+}
 
 
 function openOrClosed(card) {
