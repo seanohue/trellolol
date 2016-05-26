@@ -1,78 +1,93 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --harmony
+
 'use strict';
-/// <reference path="lib/trelloItems.ts"/>
-var Trello = require('./lib/trelloItems');
-var fs = require('fs');
-var commander = require('commander');
-// Defaults
-var inputFile;
-var outputFile;
-var targetListName;
+
+const fs = require('fs');
+const commander = require('commander');
+const md = require('./md');
+
+
 // CLI options
+//TODO: Add ability to target a list with a flag, or render all lists.
+let inputFile, outputFile, targetListName;
 commander
-    .arguments('<input> <output> [listname]')
-    .option('-n, --newer', 'Only include cards from the past 30 days')
-    .option('-o, --open', 'Only include open cards')
-    .option('-c, --closed', 'Only include closed cards')
-    .action(function (input, output, listname) {
-    [input, output].forEach(validate);
+  .arguments('<input> [output] [listname]')
+  .option('-n, --newer', 'Only include cards from the past 30 days')
+  .option('-o, --open', 'Only include open cards')
+  .option('-c, --closed', 'Only include closed cards')
+  .action((input, output, listname) => {
+    validate(input);
     inputFile = (input.endsWith('.json') ? input : input + '.json');
-    outputFile = (output.endsWith('.md') ? output : output + '.md');
+
+    if (output) {
+      outputFile = (output.endsWith('.md') ? output : output + '.md');
+    }
+
     targetListName = listname || 'Done';
-})
-    .parse(process.argv);
+  })
+  .parse(process.argv);
+
 function validate(arg) {
-    if (!arg)
-        throw 'You must supply an input and output filename.';
+  if (!arg) throw 'You must supply an input filename.';
 }
+
 /// Set up us the Trello objects.
-//TODO: Allow for dynamic call to Trello API via an option?
-var dir = process.cwd() + '/';
-var trelloBoard = require(dir + inputFile);
-var cards = trelloBoard.cards;
-var lists = trelloBoard.lists;
-//TODO: Pull from board name.
-var projectName = trelloBoard.name || 'Project';
+const dir = process.cwd() + '/';
+const trelloBoard = require(dir + inputFile);
+const lists = trelloBoard.lists;
+
 // Organize the Trello objects.
 // TODO: Allow for multiple list names to be targeted.
-var targetListNames = [targetListName];
-var targetLists = lists
-    .filter(function (list) { return targetListNames.some(function (name) { return name === list.name; }); });
-var targetListIDs = targetLists
-    .map(function (list) { return list.id; });
-var targetCards = cards
-    .filter(function (card) { return targetListIDs.some(function (id) { return id === card.idList; }); })
-    .filter(onlyFromLastMonth)
-    .filter(openOrClosed);
-// Put objects into classes...
-var myCards = targetCards
-    .map(function (card) { return new Trello.Card(card.name, card.desc); });
-var myLists = targetLists
-    .map(function (list) { return new Trello.List(list.name, myCards); });
-var myDocument = new Trello.Document(projectName, myLists);
-console.log("\nRendered unto Markdown thusly:\n");
-console.log(myDocument.toMarkdown());
-fs.writeFileSync(dir + outputFile, myDocument.toMarkdown());
-function openOrClosed(card) {
-    if (commander.open && commander.closed)
-        return true;
-    if (commander.open)
-        return card.closed !== 'true';
-    if (commander.closed)
-        return card.closed === 'true';
-    return true;
+const targetListNames = [targetListName];
+const targetLists = lists
+  .filter(list => targetListNames.some(name => name === list.name));
+const targetListIDs = targetLists.map(list => list.id);
+
+if (!targetListIDs.length) throw 'No such list found.';
+
+const cards = trelloBoard.cards
+  .filter(card => targetListIDs.some(id => id === card.idList))
+  .filter(onlyFromLastMonth)
+  .filter(openOrClosed);
+
+//TODO: Include checklists, card descs, timestamps, tags/categories.
+const renderCard = card  => md.li(card.name);
+
+const renderList = cards => cards.map(renderCard).join('');
+
+//TODO: Include contrib. names and such.
+const renderBoardInfo = board          => md.h(1, board.name)
+const renderBoard     = (board, cards) => renderBoardInfo(board)
+                                          + renderList(cards);
+
+const write = (dir, file, str) => {
+  console.log('Rendered unto markdown thusly:');
+  console.log(str);
+  if (dir && file) fs.writeFileSync(dir + file, str);
 }
+
+write(dir, outputFile, renderBoard(trelloBoard, cards));
+
+//TODO: Make into pure funcs
+function openOrClosed(card) {
+  if (commander.open && commander.closed) return true;
+  if (commander.open)   return card.closed !== 'true';
+  if (commander.closed) return card.closed === 'true';
+  return true;
+}
+
 function onlyFromLastMonth(card) {
-    if (!commander.newer)
-        return true;
-    var base = 10;
-    var today = new Date();
-    var month = today.getMonth() + 1;
-    var day = today.getDay() + 1;
-    var cardMonth = parseInt(card.dateLastActivity.substring(5, 7), base);
-    var cardDay = parseInt(card.dateLastActivity.substring(8, 10), base);
-    var isSameMonth = cardMonth === month;
-    var isPreviousMonth = cardMonth === cardMonth - 1;
-    var isWithinThirty = isPreviousMonth && cardDay >= day;
-    return isSameMonth || isWithinThirty;
+  if (!commander.newer) return true;
+  const base = 10;
+  const today = new Date();
+  const month = today.getMonth() + 1;
+  const day = today.getDay() + 1;
+
+  const cardMonth = parseInt(card.dateLastActivity.substring(5, 7), base);
+  const cardDay = parseInt(card.dateLastActivity.substring(8, 10), base);
+
+  const isSameMonth     = cardMonth === month;
+  const isPreviousMonth = cardMonth === cardMonth - 1;
+  const isWithinThirty  = isPreviousMonth && cardDay >= day;
+  return isSameMonth || isWithinThirty;
 }

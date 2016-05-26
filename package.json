@@ -1,19 +1,14 @@
 {
   "name": "trellolol",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Trello JSON to Markdown",
   "main": "trellolol.js",
   "dependencies": {
-    "commander": "^2.9.0",
-    "json2md": "^1.5.0"
-  },
-  "devDependencies": {
-    "typescript": "^1.8.10"
+    "commander": "^2.9.0"
   },
   "scripts": {
-    "test": "npm test",
-    "compile": "tsc trellolol.ts",
-    "run": "node trellolol.js"
+    "test": "echo 'Write tests.'",
+    "run": "node trellolol.js example/input.json example/output.md Technical Stuff"
   },
   "repository": {
     "type": "git",
