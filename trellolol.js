@@ -8,6 +8,7 @@ const md = require('./md');
 
 
 // CLI options
+//TODO: Add ability to target a list with a flag, or render all lists.
 let inputFile, outputFile, targetListName;
 commander
   .arguments('<input> [output] [listname]')
