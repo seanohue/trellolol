@@ -1,17 +1,16 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --harmony
 
 'use strict';
 
-import { $: fs } from "fs";
-import { $: commander } from "commander";
-
-import { md } from "md";
+const fs = require('fs');
+const commander = require('commander');
+const md = require('./md');
 
 
 // CLI options
 let inputFile, outputFile, targetListName;
 commander
-  .arguments('<input> <output> [listname]')
+  .arguments('<input> [output] [listname]')
   .option('-n, --newer', 'Only include cards from the past 30 days')
   .option('-o, --open', 'Only include open cards')
   .option('-c, --closed', 'Only include closed cards')
@@ -19,7 +18,7 @@ commander
     validate(input);
     inputFile = (input.endsWith('.json') ? input : input + '.json');
 
-    if (outputFile) {
+    if (output) {
       outputFile = (output.endsWith('.md') ? output : output + '.md');
     }
 
@@ -28,7 +27,7 @@ commander
   .parse(process.argv);
 
 function validate(arg) {
-  if (!arg) throw 'You must supply an input and output filename.';
+  if (!arg) throw 'You must supply an input filename.';
 }
 
 /// Set up us the Trello objects.
@@ -43,24 +42,30 @@ const targetLists = lists
   .filter(list => targetListNames.some(name => name === list.name));
 const targetListIDs = targetLists.map(list => list.id);
 
+if (!targetListIDs.length) throw 'No such list found.';
+
 const cards = trelloBoard.cards
   .filter(card => targetListIDs.some(id => id === card.idList))
   .filter(onlyFromLastMonth)
   .filter(openOrClosed);
 
-//TODO: Include contrib. names and such.
-const renderBoardInfo = board => md.h(1, board.name);
-
 //TODO: Include checklists, card descs, timestamps, tags/categories.
 const renderCard = card  => md.li(card.name);
+
 const renderList = cards => cards.map(renderCard).join('');
 
+//TODO: Include contrib. names and such.
+const renderBoardInfo = board          => md.h(1, board.name)
+const renderBoard     = (board, cards) => renderBoardInfo(board)
+                                          + renderList(cards);
+
 const write = (dir, file, str) => {
+  console.log('Rendered unto markdown thusly:');
   console.log(str);
-  if (dir && file) fs.writeFileSync(dest, str));
+  if (dir && file) fs.writeFileSync(dir + file, str);
 }
 
-write(dir, outputFile, renderList(cards));
+write(dir, outputFile, renderBoard(trelloBoard, cards));
 
 //TODO: Make into pure funcs
 function openOrClosed(card) {
